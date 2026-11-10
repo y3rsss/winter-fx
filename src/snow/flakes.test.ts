@@ -53,6 +53,6 @@ describe("createFlakes", () => {
 	});
 	test("makes count flakes", () => {
 		const flake = createFlake(bounds, () => 0);
-		expect(createFlakes(3, bounds, () => 0)).toEqual([flake]);
+		expect(createFlakes(3, bounds, () => 0)).toEqual([flake, flake, flake]);
 	});
 });
