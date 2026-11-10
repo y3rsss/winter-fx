@@ -1,0 +1,29 @@
+{
+	"name": "winter-fx",
+	"version": "0.1.0",
+	"description": "",
+	"scripts": {
+		"typecheck": "tsc --noEmit",
+		"lint": "biome check .",
+		"format": "biome check --write .",
+		"test": "vitest run"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/y3rsss/winter-fx.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"type": "module",
+	"private": true,
+	"bugs": {
+		"url": "https://github.com/y3rsss/winter-fx/issues"
+	},
+	"homepage": "https://github.com/y3rsss/winter-fx#readme",
+	"devDependencies": {
+		"@biomejs/biome": "2.6.3",
+		"typescript": "7.0.2",
+		"vitest": "5.0.5"
+	}
+}
