@@ -79,3 +79,53 @@ export function createFlakes(
 ): Flake[] {
 	return Array.from({ length: count }, () => createFlake(bounds, random));
 }
+
+const SWAY_PX = 8;
+
+export function swayOffset(flake: Flake): number {
+	return Math.sin(flake.phase) * SWAY_PX;
+}
+
+const MAX_STEP_SECONDS = 0.1;
+
+export function elapsedSeconds(
+	previous: number | undefined,
+	now: number,
+): number {
+	if (previous === undefined) return 0;
+	return Math.min((now - previous) / 1000, MAX_STEP_SECONDS);
+}
+
+export function moveFlake(
+	flake: Flake,
+	seconds: number,
+	speedFactor: number,
+	bounds: Bounds,
+	random: Random,
+): Flake {
+	const newY = flake.y + speedFactor * seconds * flake.speed;
+
+	if (newY - flake.radius > bounds.height) {
+		const fresh = createFlake(bounds, random);
+		return { ...fresh, y: -fresh.radius };
+	}
+	return { ...flake, y: newY, phase: flake.phase + flake.swaySpeed * seconds };
+}
+
+export function resizeFlakes(
+	flakes: Flake[],
+	bounds: Bounds,
+	amount: number,
+	random: Random,
+): Flake[] {
+	const count = flakeCount(bounds, amount);
+	const firstFlakes = flakes.slice(0, count);
+	const keptFlakes = firstFlakes.map((flake) => {
+		if (flake.x >= bounds.width) {
+			return { ...flake, x: random() * bounds.width };
+		}
+		return flake;
+	});
+	const newFlakes = createFlakes(count - keptFlakes.length, bounds, random);
+	return [...keptFlakes, ...newFlakes];
+}
