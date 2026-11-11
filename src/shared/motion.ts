@@ -6,9 +6,3 @@ export function watchReducedMotion(
 	onChange(query.matches);
 	query.addEventListener("change", () => onChange(query.matches), { signal });
 }
-
-const controller = new AbortController();
-watchReducedMotion(
-	(reduced) => console.log("reduced:", reduced),
-	controller.signal,
-);
