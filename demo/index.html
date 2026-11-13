@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>winter-fx demo</title>
+		<style>
+			:root {
+				color-scheme: light;
+				--page: light-dark(#f3f5f8, #0f1722);
+				--text: light-dark(#1b2430, #e4e9f0);
+				--muted: light-dark(#4d5968, #a3afbf);
+				--line: light-dark(#d5dbe3, #2a3646);
+				--button: light-dark(#ffffff, #1a2533);
+				--accent: light-dark(#2d5f99, #8bb8eb);
+				font-family: system-ui, sans-serif;
+				line-height: 1.6;
+			}
+			body {
+				margin: 0;
+				background: var(--page);
+				color: var(--text);
+			}
+			header {
+				position: sticky;
+				top: 0;
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				padding: 12px 16px;
+				background: var(--page);
+				border-bottom: 1px solid var(--line);
+			}
+			h1 {
+				margin: 0;
+				font-size: 1.25rem;
+			}
+			.controls {
+				display: flex;
+				gap: 8px;
+			}
+			button {
+				min-height: 44px;
+				padding: 8px 14px;
+				border: 1px solid var(--line);
+				border-radius: 8px;
+				background: var(--button);
+				color: var(--text);
+				font: inherit;
+				cursor: pointer;
+			}
+			button[aria-pressed="true"] {
+				border-color: var(--accent);
+				box-shadow: inset 0 0 0 1px var(--accent);
+				color: var(--accent);
+			}
+			main {
+				max-width: 40rem;
+				min-height: 150vh;
+				margin: 0 auto;
+				padding: 24px 16px 96px;
+			}
+			.lead {
+				margin: 0 0 24px;
+				font-size: 1.1rem;
+			}
+			h2 {
+				margin: 0 0 8px;
+				font-size: 1.1rem;
+			}
+			ul {
+				margin: 0;
+				padding-left: 20px;
+				color: var(--muted);
+			}
+			li + li {
+				margin-top: 8px;
+			}
+			.try {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 12px;
+				margin-top: 8px;
+				color: var(--text);
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>winter-fx</h1>
+			<div class="controls">
+				<button id="snow" type="button" aria-pressed="false">Snow</button>
+				<button id="dark" type="button" aria-pressed="false">Dark</button>
+			</div>
+		</header>
+		<main>
+			<p class="lead">
+				Snow for any website. It falls over the page without getting in the
+				way.
+			</p>
+			<section>
+				<h2>Snow</h2>
+				<ul>
+					<li>
+						Clicks go through the snow to the page underneath.
+						<div class="try">
+							<button id="sample" type="button">Click me</button>
+							<span id="clicks" aria-live="polite">Clicks: 0</span>
+						</div>
+					</li>
+					<li>
+						Takes any CSS color, including variables and
+						<code>light-dark()</code>, and follows theme changes right away.
+					</li>
+					<li>Draws at the screen's pixel density, up to 2x, so flakes stay sharp.</li>
+					<li>Fills the new shape when the window is resized or a phone is rotated.</li>
+					<li>Stays in place while the page scrolls.</li>
+					<li>
+						Stops when the visitor turns on reduced motion, and comes back when
+						they turn it off.
+					</li>
+					<li>Falls at the same speed on 60 Hz and 120 Hz screens.</li>
+					<li>Fades in when it starts.</li>
+				</ul>
+			</section>
+		</main>
+		<script type="module" src="./main.ts"></script>
+	</body>
+</html>
