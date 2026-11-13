@@ -3,7 +3,7 @@ export interface Bounds {
 	height: number;
 }
 
-const AREA_PER_FLAKE = 8000;
+const AREA_PER_FLAKE = 5300;
 
 export function flakeCount(bounds: Bounds, amount: number): number {
 	return Math.round(((bounds.width * bounds.height) / AREA_PER_FLAKE) * amount);

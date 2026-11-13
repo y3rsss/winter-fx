@@ -161,7 +161,7 @@ describe("snow", () => {
 	test("rejects a bad setting without adding anything", () => {
 		expect(() => snow({ amount: -1 })).toThrow(
 			new RangeError(
-				'winter-fx: snow() setting "amount" must be a number greater than 0, got -1',
+				'winter-fx: snow() setting "amount" must be a number greater than 0 and at most 3, got -1',
 			),
 		);
 		expect(document.querySelector("canvas")).toBeNull();
@@ -171,6 +171,31 @@ describe("snow", () => {
 			new TypeError('winter-fx: snow() has no setting "colour"'),
 		);
 		expect(document.querySelector("canvas")).toBeNull();
+	});
+	test("rejects an amount above 3", () => {
+		expect(() => {
+			stop = snow({ amount: 3.5 });
+		}).toThrow(
+			new RangeError(
+				'winter-fx: snow() setting "amount" must be a number greater than 0 and at most 3, got 3.5',
+			),
+		);
+		expect(document.querySelector("canvas")).toBeNull();
+	});
+	test("rejects a speed above 5", () => {
+		expect(() => {
+			stop = snow({ speed: 5.5 });
+		}).toThrow(
+			new RangeError(
+				'winter-fx: snow() setting "speed" must be a number greater than 0 and at most 5, got 5.5',
+			),
+		);
+		expect(document.querySelector("canvas")).toBeNull();
+	});
+	test("accepts an amount of 3 and a speed of 5", () => {
+		expect(() => {
+			stop = snow({ amount: 3, speed: 5 });
+		}).not.toThrow();
 	});
 
 	test("fits the canvas to the window", () => {

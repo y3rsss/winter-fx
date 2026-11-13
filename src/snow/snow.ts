@@ -26,6 +26,8 @@ export interface SnowOptions extends CommonOptions {
 
 const MAX_PIXEL_RATIO = 2;
 const FADE_IN_MS = 1000;
+const MAX_AMOUNT = 3;
+const MAX_SPEED = 5;
 
 function getContext2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 	const context = canvas.getContext("2d");
@@ -81,8 +83,13 @@ export function snow(options?: SnowOptions): () => void {
 	]);
 
 	const color = checkColor("snow", "color", settings.color ?? "#ffffff");
-	const amount = checkPositive("snow", "amount", settings.amount ?? 1);
-	const speed = checkPositive("snow", "speed", settings.speed ?? 1);
+	const amount = checkPositive(
+		"snow",
+		"amount",
+		settings.amount ?? 1,
+		MAX_AMOUNT,
+	);
+	const speed = checkPositive("snow", "speed", settings.speed ?? 1, MAX_SPEED);
 	const zIndex = checkInteger("snow", "zIndex", settings.zIndex ?? 9999);
 
 	const canvas = document.createElement("canvas");

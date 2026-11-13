@@ -23,13 +23,13 @@ const base: Flake = {
 
 describe("flakeCount", () => {
 	test("fills a desktop screen", () => {
-		expect(flakeCount({ width: 1920, height: 1080 }, 1)).toBe(259);
+		expect(flakeCount({ width: 1920, height: 1080 }, 1)).toBe(391);
 	});
 	test("fills a phone screen", () => {
-		expect(flakeCount({ width: 390, height: 844 }, 1)).toBe(41);
+		expect(flakeCount({ width: 390, height: 844 }, 1)).toBe(62);
 	});
 	test("doubles the flakes with amount 2", () => {
-		expect(flakeCount({ width: 1920, height: 1080 }, 2)).toBe(518);
+		expect(flakeCount({ width: 1920, height: 1080 }, 2)).toBe(782);
 	});
 	test("gives no flakes on an empty screen", () => {
 		expect(flakeCount({ width: 0, height: 0 }, 1)).toBe(0);
@@ -129,7 +129,7 @@ describe("resizeFlakes", () => {
 			{ ...base, x: 3 },
 		];
 		expect(
-			resizeFlakes(flakes, { width: 100, height: 160 }, 1, () => 0.5),
+			resizeFlakes(flakes, { width: 100, height: 106 }, 1, () => 0.5),
 		).toEqual([
 			{ ...base, x: 1 },
 			{ ...base, x: 2 },
@@ -138,7 +138,7 @@ describe("resizeFlakes", () => {
 	test("adds flakes when the screen gets bigger", () => {
 		expect(
 			resizeFlakes([], { width: 1920, height: 1080 }, 1, Math.random).length,
-		).toBe(259);
+		).toBe(391);
 	});
 	test("moves a flake past the right edge back inside", () => {
 		const resized = resizeFlakes(
