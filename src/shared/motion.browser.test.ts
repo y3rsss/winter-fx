@@ -1,13 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { commands } from "vitest/browser";
+import { switchReducedMotion } from "../../test/reduced-motion.ts";
 import { watchReducedMotion } from "./motion.ts";
-
-function waitForReducedMotion(): Promise<void> {
-	const query = matchMedia("(prefers-reduced-motion: reduce)");
-	return new Promise((resolve) => {
-		query.addEventListener("change", () => resolve(), { once: true });
-	});
-}
 
 describe("watchReducedMotion", () => {
 	let controller: AbortController;
@@ -45,9 +39,7 @@ describe("watchReducedMotion", () => {
 	test("stops telling once the signal aborts", async () => {
 		watchReducedMotion((reduced) => calls.push(reduced), controller.signal);
 		controller.abort();
-		const changed = waitForReducedMotion();
-		await commands.emulateReducedMotion("reduce");
-		await changed;
+		await switchReducedMotion("reduce");
 		expect(calls).toEqual([false]);
 	});
 });

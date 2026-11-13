@@ -118,6 +118,15 @@ describe("checkColorList", () => {
 			),
 		);
 	});
+	test("rejects a list with a gap in it", () => {
+		const withGap = ["red"];
+		withGap[2] = "blue";
+		expect(() => checkColorList("garland", "colors", withGap)).toThrow(
+			new TypeError(
+				'winter-fx: garland() setting "colors[1]" must be a string, got undefined',
+			),
+		);
+	});
 });
 
 describe("readOptions", () => {

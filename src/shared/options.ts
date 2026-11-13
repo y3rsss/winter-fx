@@ -78,7 +78,7 @@ export function checkColorList(
 			settingMessage(effect, name, "have at least one color", value),
 		);
 	}
-	return value.map((color, index) =>
+	return Array.from(value, (color, index) =>
 		checkColor(effect, `${name}[${index}]`, color),
 	);
 }

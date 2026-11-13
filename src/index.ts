@@ -1,4 +1,3 @@
-export type { SnowOptions } from "./snow/snow.ts";
-export { snow } from "./snow/snow.ts";
-
-export type Stop = () => void;
+export { type GarlandOptions, garland } from "./garland/garland.ts";
+export { type SnowOptions, snow } from "./snow/snow.ts";
+export type { Stop } from "./shared/stop.ts";

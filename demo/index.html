@@ -78,6 +78,9 @@
 			li + li {
 				margin-top: 8px;
 			}
+			section + section {
+				margin-top: 32px;
+			}
 			.try {
 				display: flex;
 				flex-wrap: wrap;
@@ -93,13 +96,14 @@
 			<h1>winter-fx</h1>
 			<div class="controls">
 				<button id="snow" type="button" aria-pressed="false">Snow</button>
+				<button id="garland" type="button" aria-pressed="false">Garland</button>
 				<button id="dark" type="button" aria-pressed="false">Dark</button>
 			</div>
 		</header>
 		<main>
 			<p class="lead">
-				Snow for any website. It falls over the page without getting in the
-				way.
+				Winter effects for any website. They sit over the page without getting
+				in the way.
 			</p>
 			<section>
 				<h2>Snow</h2>
@@ -124,6 +128,21 @@
 					</li>
 					<li>Falls at the same speed on 60 Hz and 120 Hz screens.</li>
 					<li>Fades in when it starts.</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Garland</h2>
+				<ul>
+					<li>Hangs across the top of the page, and the buttons under it still work.</li>
+					<li>
+						Takes any list of CSS colors, including variables, and cycles through
+						them.
+					</li>
+					<li>Each bulb twinkles on its own timing.</li>
+					<li>
+						Stays lit without twinkling when the visitor turns on reduced motion.
+					</li>
+					<li>Rehangs for a new width, and ignores a phone's address bar hiding.</li>
 				</ul>
 			</section>
 		</main>

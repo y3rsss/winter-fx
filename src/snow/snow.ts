@@ -7,6 +7,7 @@ import {
 	readOptions,
 } from "../shared/options.ts";
 import { assertBrowser, createOverlay } from "../shared/overlay.ts";
+import type { Stop } from "../shared/stop.ts";
 import {
 	type Bounds,
 	createFlakes,
@@ -73,7 +74,7 @@ function drawFlakes(
 	}
 }
 
-export function snow(options?: SnowOptions): () => void {
+export function snow(options?: SnowOptions): Stop {
 	assertBrowser("snow");
 	const settings = readOptions("snow", options, [
 		"color",

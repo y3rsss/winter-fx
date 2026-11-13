@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { cdp, commands, page } from "vitest/browser";
+import { switchReducedMotion } from "../../test/reduced-motion.ts";
 import { snow } from "./snow.ts";
 
 function wait(ms: number): Promise<void> {
@@ -341,9 +342,8 @@ describe("snow", () => {
 		const stopSnow = snow();
 		stopSnow();
 		const nextFrame = vi.spyOn(window, "requestAnimationFrame");
-		await commands.emulateReducedMotion("reduce");
-		await commands.emulateReducedMotion("no-preference");
-		await wait(100);
+		await switchReducedMotion("reduce");
+		await switchReducedMotion("no-preference");
 		expect(nextFrame).not.toHaveBeenCalled();
 	});
 
