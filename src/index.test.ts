@@ -4,4 +4,5 @@ test("can be imported outside a browser", async () => {
 	const winterFx = await import("./index.ts");
 	expect(typeof winterFx.snow).toBe("function");
 	expect(typeof winterFx.garland).toBe("function");
+	expect(typeof winterFx.frost).toBe("function");
 });
