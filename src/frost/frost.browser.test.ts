@@ -54,6 +54,23 @@ function growthSizes(): string[] {
 	return effect.getKeyframes().map((frame) => String(frame.maskSize));
 }
 
+function wait(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function resizeTo(width: number, height: number): Promise<void> {
+	const resized = new Promise((resolve) => {
+		addEventListener("resize", resolve, { once: true });
+	});
+	await page.viewport(width, height);
+	await resized;
+	await new Promise(requestAnimationFrame);
+}
+
+function stemsFor(width: number, height: number): string {
+	return pathData(onLevel(frostLines(width, height, 1, SEED), 0));
+}
+
 function referenced(paint: string): Element {
 	const id = /#([^")]+)/.exec(paint)?.[1];
 	const element = document.getElementById(id ?? "");
@@ -76,6 +93,7 @@ describe("frost", () => {
 	afterEach(async () => {
 		stop?.();
 		stop = undefined;
+		vi.useRealTimers();
 		vi.restoreAllMocks();
 		document.documentElement.style.removeProperty("--brand");
 		document.documentElement.style.removeProperty("color-scheme");
@@ -370,5 +388,73 @@ describe("frost", () => {
 		const finish = vi.spyOn(Animation.prototype, "finish");
 		await switchReducedMotion("reduce");
 		expect(finish).not.toHaveBeenCalled();
+	});
+
+	describe("when the window resizes", () => {
+		test("regrows the same crystals for the new size", async () => {
+			vi.spyOn(Math, "random").mockReturnValueOnce(SEED_PICK);
+			stop = frost();
+			await resizeTo(600, 800);
+			await vi.waitFor(() => {
+				expect(frostPaths().stems.getAttribute("d")).toBe(stemsFor(600, 800));
+			});
+			const all = pathData(frostLines(600, 800, 1, SEED));
+			expect(frostPaths().blurred.getAttribute("d")).toBe(all);
+		});
+		test("regrows when only the height changes", async () => {
+			vi.spyOn(Math, "random").mockReturnValue(SEED_PICK);
+			stop = frost();
+			await resizeTo(1200, 700);
+			await vi.waitFor(() => {
+				expect(frostPaths().stems.getAttribute("d")).toBe(stemsFor(1200, 700));
+			});
+		});
+		test("waits until resizing has stopped for 200 ms", async () => {
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+			vi.spyOn(Math, "random").mockReturnValue(SEED_PICK);
+			stop = frost();
+			const { stems } = frostPaths();
+			await resizeTo(600, 800);
+			vi.advanceTimersByTime(199);
+			expect(stems.getAttribute("d")).toBe(stemsFor(1200, 800));
+			dispatchEvent(new Event("resize"));
+			vi.advanceTimersByTime(199);
+			expect(stems.getAttribute("d")).toBe(stemsFor(1200, 800));
+			vi.advanceTimersByTime(1);
+			expect(stems.getAttribute("d")).toBe(stemsFor(600, 800));
+		});
+		test("leaves the crystals alone when the size stays the same", async () => {
+			stop = frost();
+			const draw = vi.spyOn(frostPaths().stems, "setAttribute");
+			dispatchEvent(new Event("resize"));
+			await wait(300);
+			expect(draw).not.toHaveBeenCalled();
+		});
+		test("doesn't start the growth again", async () => {
+			stop = frost();
+			const animate = vi.spyOn(Element.prototype, "animate");
+			const draw = vi.spyOn(frostPaths().stems, "setAttribute");
+			await resizeTo(600, 800);
+			await vi.waitFor(() => {
+				expect(draw).toHaveBeenCalled();
+			});
+			expect(animate).not.toHaveBeenCalled();
+		});
+		test("regrows nothing when stopped during the wait", async () => {
+			stop = frost();
+			const draw = vi.spyOn(frostPaths().stems, "setAttribute");
+			await resizeTo(600, 800);
+			stop();
+			await wait(300);
+			expect(draw).not.toHaveBeenCalled();
+		});
+		test("ignores it once stopped", async () => {
+			stop = frost();
+			const draw = vi.spyOn(frostPaths().stems, "setAttribute");
+			stop();
+			await resizeTo(600, 800);
+			await wait(300);
+			expect(draw).not.toHaveBeenCalled();
+		});
 	});
 });

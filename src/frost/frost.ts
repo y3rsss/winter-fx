@@ -28,6 +28,7 @@ const GRAIN_TILE = 128;
 const GLOW_SHARE = 30;
 const GROW_MS = 5000;
 const GROW_EASING = "ease-out";
+const REGROW_DELAY_MS = 200;
 const REACH = 70;
 const BOTTOM_REACH = 1.4;
 const FADE = 20;
@@ -166,9 +167,12 @@ export function frost(options?: FrostOptions): Stop {
 	const picture = createPicture(color);
 	layer.append(picture.svg);
 	const seed = Math.floor(Math.random() * 2 ** 32);
+	let width = 0;
+	let height = 0;
+
 	function grow(): void {
-		const width = picture.svg.clientWidth;
-		const height = picture.svg.clientHeight;
+		width = picture.svg.clientWidth;
+		height = picture.svg.clientHeight;
 		const lines = frostLines(width, height, size, seed);
 		for (const i of picture.crust) {
 			i.setAttribute("d", pathData(lines));
@@ -187,8 +191,28 @@ export function frost(options?: FrostOptions): Stop {
 		if (reduced) growth.finish();
 	}, controller.signal);
 
+	let regrowTimer = 0;
+
+	addEventListener(
+		"resize",
+		() => {
+			clearTimeout(regrowTimer);
+			regrowTimer = setTimeout(() => {
+				if (
+					picture.svg.clientWidth === width &&
+					picture.svg.clientHeight === height
+				) {
+					return;
+				}
+				grow();
+			}, REGROW_DELAY_MS);
+		},
+		{ signal: controller.signal },
+	);
+
 	return () => {
 		controller.abort();
+		clearTimeout(regrowTimer);
 		growth.cancel();
 		layer.remove();
 	};
