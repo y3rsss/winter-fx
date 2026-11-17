@@ -1,4 +1,4 @@
-import type { Random } from "../snow/flakes.ts";
+import { between, type Random } from "../shared/random.ts";
 
 export interface Point {
 	x: number;
@@ -88,11 +88,6 @@ function edgesOf(width: number, height: number): Edge[] {
 			weight: sideWeight,
 		},
 	];
-}
-
-export function between(random: Random, low: number, high: number): number {
-	const num = random();
-	return low + num * (high - low);
 }
 
 function pointAt(start: Point, angle: number, distance: number): Point {

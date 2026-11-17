@@ -1,3 +1,5 @@
+import { between, type Random } from "../shared/random.ts";
+
 export interface Bounds {
 	width: number;
 	height: number;
@@ -9,7 +11,6 @@ export function flakeCount(bounds: Bounds, amount: number): number {
 	return Math.round(((bounds.width * bounds.height) / AREA_PER_FLAKE) * amount);
 }
 
-export type Random = () => number;
 export interface Flake {
 	readonly x: number;
 	readonly y: number;
@@ -64,8 +65,8 @@ export function createFlake(bounds: Bounds, random: Random): Flake {
 	return {
 		x: random() * bounds.width,
 		y: random() * bounds.height,
-		radius: layer.minRadius + random() * (layer.maxRadius - layer.minRadius),
-		speed: layer.minSpeed + random() * (layer.maxSpeed - layer.minSpeed),
+		radius: between(random, layer.minRadius, layer.maxRadius),
+		speed: between(random, layer.minSpeed, layer.maxSpeed),
 		opacity: layer.opacity,
 		phase: random() * 2 * Math.PI,
 		swaySpeed: 0.5 + random(),
