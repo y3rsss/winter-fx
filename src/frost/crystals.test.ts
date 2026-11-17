@@ -5,6 +5,7 @@ import {
 	growCrystal,
 	type Line,
 	pathData,
+	type Side,
 	seededRandom,
 	waveOf,
 } from "./crystals.ts";
@@ -273,8 +274,6 @@ const WIDTH = 800;
 const HEIGHT = 600;
 const SEED = 7;
 
-type Side = "top" | "bottom" | "left" | "right";
-
 function crystalsOf(lines: Line[]): Line[][] {
 	const crystals: Line[][] = [];
 	for (const line of lines) {
@@ -338,10 +337,12 @@ function expectSameLines(actual: Line[] | undefined, expected: Line[]): void {
 }
 
 describe("frostLines", () => {
+	let edges: Record<Side, Line[]>;
 	let lines: Line[] = [];
 
 	beforeAll(() => {
-		lines = frostLines(WIDTH, HEIGHT, 1, SEED);
+		edges = frostLines(WIDTH, HEIGHT, 1, SEED);
+		lines = Object.values(edges).flat();
 	});
 
 	test("builds the first two crystals on the top edge exactly like this", () => {
@@ -386,16 +387,16 @@ describe("frostLines", () => {
 	});
 
 	test("gives the same lines for the same seed, and others for another seed", () => {
-		expect(frostLines(WIDTH, HEIGHT, 1, SEED)).toEqual(lines);
-		expect(frostLines(WIDTH, HEIGHT, 1, SEED + 100)).not.toEqual(lines);
+		expect(frostLines(WIDTH, HEIGHT, 1, SEED)).toEqual(edges);
+		expect(frostLines(WIDTH, HEIGHT, 1, SEED + 100)).not.toEqual(edges);
 	});
 
-	test("goes edge by edge: top, bottom, left, right", () => {
-		const sides = crystalsOf(lines).map((crystal) =>
-			sideOf(stemOf(crystal), WIDTH, HEIGHT),
-		);
-		const order = sides.filter((side, index) => side !== sides[index - 1]);
-		expect(order).toEqual(["top", "bottom", "left", "right"]);
+	test("gives the lines of each edge under its side, in the order top, bottom, left, right", () => {
+		expect(Object.keys(edges)).toEqual(["top", "bottom", "left", "right"]);
+		for (const side of ["top", "bottom", "left", "right"] as const) {
+			expect(edges[side].length).toBeGreaterThan(0);
+			expect(crystalsOf(edges[side])).toEqual(crystalsOn(side, lines));
+		}
 	});
 
 	test("spaces crystals 5 to 11 px apart, starting within 11 px of the edge's start", () => {
@@ -457,7 +458,7 @@ describe("frostLines", () => {
 	});
 
 	test("scales every line with size", () => {
-		const bigger = frostLines(WIDTH, HEIGHT, 2, SEED);
+		const bigger = Object.values(frostLines(WIDTH, HEIGHT, 2, SEED)).flat();
 		expect(bigger).toHaveLength(lines.length);
 		for (const [index, line] of lines.entries()) {
 			expect(lengthOf(bigger[index] as Line)).toBeCloseTo(
@@ -468,7 +469,9 @@ describe("frostLines", () => {
 	});
 
 	test("keeps the left edge the same and the top crystals in their spots on a wider screen", () => {
-		const wider = frostLines(WIDTH + 200, HEIGHT, 1, SEED);
+		const wider = Object.values(
+			frostLines(WIDTH + 200, HEIGHT, 1, SEED),
+		).flat();
 		expect(crystalsOn("left", wider, WIDTH + 200)).toEqual(
 			crystalsOn("left", lines),
 		);
@@ -480,12 +483,17 @@ describe("frostLines", () => {
 	});
 
 	test("gives an edge of length 0 no crystals", () => {
-		const noWidth = frostLines(0, HEIGHT, 1, SEED);
-		expect(noWidth.length).toBeGreaterThan(0);
-		expect(
-			crystalsOf(noWidth).every((crystal) => stemOf(crystal).from.x === 0),
-		).toBe(true);
-		expect(frostLines(0, 0, 1, SEED)).toEqual([]);
+		const { top, bottom, left, right } = frostLines(0, HEIGHT, 1, SEED);
+		expect(top).toEqual([]);
+		expect(bottom).toEqual([]);
+		expect(left.length).toBeGreaterThan(0);
+		expect(right.length).toBeGreaterThan(0);
+		expect(frostLines(0, 0, 1, SEED)).toEqual({
+			top: [],
+			bottom: [],
+			left: [],
+			right: [],
+		});
 	});
 });
 
@@ -517,7 +525,7 @@ describe("pathData", () => {
 	});
 
 	test("draws every line of the frost", () => {
-		const lines = frostLines(WIDTH, HEIGHT, 1, SEED);
+		const lines = Object.values(frostLines(WIDTH, HEIGHT, 1, SEED)).flat();
 		expect(pathData(lines).match(/M/g)).toHaveLength(lines.length);
 		expect(pathData(lines).match(/L/g)).toHaveLength(lines.length);
 	});

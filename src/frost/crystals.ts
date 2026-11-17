@@ -17,7 +17,10 @@ interface Wave {
 	phase: number;
 }
 
+export type Side = "top" | "bottom" | "left" | "right";
+
 interface Edge {
+	side: Side;
 	length: number;
 	inward: number;
 	start: (distance: number) => Point;
@@ -64,24 +67,28 @@ function sideWeight(share: number): number {
 function edgesOf(width: number, height: number): Edge[] {
 	return [
 		{
+			side: "top",
 			length: width,
 			inward: Math.PI / 2,
 			start: (d) => ({ x: d, y: 0 }),
 			weight: () => TOP_WEIGHT,
 		},
 		{
+			side: "bottom",
 			length: width,
 			inward: -Math.PI / 2,
 			start: (d) => ({ x: d, y: height }),
 			weight: () => BOTTOM_WEIGHT,
 		},
 		{
+			side: "left",
 			length: height,
 			inward: 0,
 			start: (d) => ({ x: 0, y: d }),
 			weight: sideWeight,
 		},
 		{
+			side: "right",
 			length: height,
 			inward: Math.PI,
 			start: (d) => ({ x: width, y: d }),
@@ -160,11 +167,17 @@ export function frostLines(
 	height: number,
 	size: number,
 	seed: number,
-): Line[] {
-	const lines: Line[] = [];
+): Record<Side, Line[]> {
+	const edges: Record<Side, Line[]> = {
+		top: [],
+		bottom: [],
+		left: [],
+		right: [],
+	};
 	for (const [index, edge] of edgesOf(width, height).entries()) {
 		const random = seededRandom(seed + index);
 		const wave = waveOf(random);
+		const lines = edges[edge.side];
 		for (
 			let d = between(random, 0, MAX_SPACING);
 			d < edge.length;
@@ -182,7 +195,7 @@ export function frostLines(
 			lines.push(...growCrystal(edge.start(d), angle, length, 0, random));
 		}
 	}
-	return lines;
+	return edges;
 }
 
 export function pathData(lines: Line[]): string {
