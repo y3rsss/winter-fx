@@ -97,6 +97,7 @@
 			<div class="controls">
 				<button id="snow" type="button" aria-pressed="false">Snow</button>
 				<button id="garland" type="button" aria-pressed="false">Garland</button>
+				<button id="frost" type="button" aria-pressed="false">Frost</button>
 				<button id="dark" type="button" aria-pressed="false">Dark</button>
 			</div>
 		</header>
@@ -143,6 +144,25 @@
 						Stays lit without twinkling when the visitor turns on reduced motion.
 					</li>
 					<li>Rehangs for a new width, and ignores a phone's address bar hiding.</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Frost</h2>
+				<ul>
+					<li>Creeps in from the edges over a few seconds, heaviest at the bottom.</li>
+					<li>Grows a different pattern each time it starts.</li>
+					<li>
+						Takes any CSS color, including variables and
+						<code>light-dark()</code>, and follows theme changes right away.
+					</li>
+					<li>
+						Shows the whole frost at once when the visitor turns on reduced
+						motion.
+					</li>
+					<li>
+						Stays on the edges without redrawing while the window is resized or a
+						phone's address bar slides away.
+					</li>
 				</ul>
 			</section>
 		</main>

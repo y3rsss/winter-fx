@@ -1,4 +1,4 @@
-import { garland, type Stop, snow } from "../src/index.ts";
+import { frost, garland, type Stop, snow } from "../src/index.ts";
 
 function byId(id: string): HTMLElement {
 	const element = document.getElementById(id);
@@ -8,36 +8,34 @@ function byId(id: string): HTMLElement {
 	return element;
 }
 
+function effectToggle(button: HTMLElement, start: () => Stop): () => void {
+	let stop: Stop | undefined;
+	return () => {
+		if (stop === undefined) {
+			stop = start();
+		} else {
+			stop();
+			stop = undefined;
+		}
+		button.setAttribute("aria-pressed", String(stop !== undefined));
+	};
+}
+
 const snowButton = byId("snow");
 const garlandButton = byId("garland");
+const frostButton = byId("frost");
 const darkButton = byId("dark");
 const sampleButton = byId("sample");
 const clicks = byId("clicks");
 
-let stopSnow: Stop | undefined;
-let stopGarland: Stop | undefined;
+const toggleSnow = effectToggle(snowButton, () =>
+	snow({ color: "light-dark(#7f9cc0, #ffffff)" }),
+);
+const toggleGarland = effectToggle(garlandButton, () => garland());
+const toggleFrost = effectToggle(frostButton, () => frost());
+
 let dark = false;
 let clickCount = 0;
-
-function toggleSnow(): void {
-	if (stopSnow === undefined) {
-		stopSnow = snow({ color: "light-dark(#7f9cc0, #ffffff)" });
-	} else {
-		stopSnow();
-		stopSnow = undefined;
-	}
-	snowButton.setAttribute("aria-pressed", String(stopSnow !== undefined));
-}
-
-function toggleGarland(): void {
-	if (stopGarland === undefined) {
-		stopGarland = garland();
-	} else {
-		stopGarland();
-		stopGarland = undefined;
-	}
-	garlandButton.setAttribute("aria-pressed", String(stopGarland !== undefined));
-}
 
 function toggleDark(): void {
 	dark = !dark;
@@ -47,6 +45,7 @@ function toggleDark(): void {
 
 snowButton.addEventListener("click", toggleSnow);
 garlandButton.addEventListener("click", toggleGarland);
+frostButton.addEventListener("click", toggleFrost);
 darkButton.addEventListener("click", toggleDark);
 sampleButton.addEventListener("click", () => {
 	clickCount += 1;
@@ -55,3 +54,4 @@ sampleButton.addEventListener("click", () => {
 
 toggleSnow();
 toggleGarland();
+toggleFrost();
