@@ -42,6 +42,21 @@ function drawnColors(canvas: HTMLCanvasElement, x = 0, y = 0): Set<string> {
 	return colors;
 }
 
+// faint edge pixels read back a few steps off a color that isn't pure, so this weighs each pixel by its alpha
+function averageColor(canvas: HTMLCanvasElement): string {
+	const data = pixelData(canvas);
+	const sums = [0, 0, 0];
+	let weight = 0;
+	for (let i = 0; i < data.length; i += 4) {
+		const alpha = data[i + 3] ?? 0;
+		for (let channel = 0; channel < 3; channel += 1) {
+			sums[channel] = (sums[channel] ?? 0) + (data[i + channel] ?? 0) * alpha;
+		}
+		weight += alpha;
+	}
+	return sums.map((sum) => Math.round(sum / weight)).join(", ");
+}
+
 function opaqueShare(canvas: HTMLCanvasElement): number {
 	const data = pixelData(canvas);
 	let drawn = 0;
@@ -114,6 +129,7 @@ describe("snow", () => {
 		stop = undefined;
 		vi.restoreAllMocks();
 		document.documentElement.style.removeProperty("--brand");
+		document.documentElement.style.removeProperty("color-scheme");
 		await commands.emulateReducedMotion("no-preference");
 		await cdp().send("Emulation.clearDeviceMetricsOverride");
 	});
@@ -219,7 +235,13 @@ describe("snow", () => {
 		expect(document.querySelector("canvas")).toBeNull();
 	});
 
-	test("draws white flakes by default", async () => {
+	test("draws blue-grey flakes by default on a light page", async () => {
+		stop = snow();
+		await waitForSnow();
+		expect(averageColor(snowCanvas())).toBe("127, 156, 192");
+	});
+	test("draws white flakes by default on a dark page", async () => {
+		document.documentElement.style.setProperty("color-scheme", "dark");
 		stop = snow();
 		await waitForSnow();
 		expect(drawnColors(snowCanvas())).toEqual(new Set(["255, 255, 255"]));

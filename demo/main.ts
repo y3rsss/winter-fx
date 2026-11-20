@@ -28,9 +28,7 @@ const darkButton = byId("dark");
 const sampleButton = byId("sample");
 const clicks = byId("clicks");
 
-const toggleSnow = effectToggle(snowButton, () =>
-	snow({ color: "light-dark(#7f9cc0, #ffffff)" }),
-);
+const toggleSnow = effectToggle(snowButton, () => snow());
 const toggleGarland = effectToggle(garlandButton, () => garland());
 const toggleFrost = effectToggle(frostButton, () => frost());
 
