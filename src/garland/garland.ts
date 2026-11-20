@@ -123,22 +123,21 @@ export function garland(options?: GarlandOptions): Stop {
 		else play();
 	}, controller.signal);
 
-	addEventListener(
-		"resize",
-		() => {
-			if (layer.clientWidth === width) {
-				return;
-			}
-			const wasTwinkling = twinkles.length > 0;
-			pause();
-			hang();
-			if (wasTwinkling) play();
-		},
-		{ signal: controller.signal },
-	);
+	const observer = new ResizeObserver(() => {
+		if (layer.clientWidth === width) {
+			return;
+		}
+		const wasTwinkling = twinkles.length > 0;
+		pause();
+		hang();
+		if (wasTwinkling) play();
+	});
+
+	observer.observe(layer);
 
 	return () => {
 		controller.abort();
+		observer.disconnect();
 		pause();
 		layer.remove();
 	};

@@ -315,7 +315,7 @@ describe("garland", () => {
 		expect(animate).not.toHaveBeenCalled();
 	});
 
-	describe("when the window resizes", () => {
+	describe("when its size changes", () => {
 		test("rehangs the garland for the new width", async () => {
 			stop = garland();
 			const oldTwinkles = document.getAnimations();
@@ -359,8 +359,22 @@ describe("garland", () => {
 			await wait(100);
 			expect(document.getAnimations()).toHaveLength(0);
 		});
+		test("rehangs when a scrollbar takes room without a window resize", async () => {
+			stop = garland();
+			const layer = garlandLayer();
+			if (!(layer instanceof HTMLElement)) {
+				throw new Error("the garland layer isn't an html element");
+			}
+			// lets a late resize event from the viewport change go by first
+			await wait(100);
+			layer.style.right = "15px";
+			await vi.waitFor(() => {
+				expect(garlandWire().getAttribute("d")).toBe(garlandLayout(1185).wire);
+			});
+		});
 		test("ignores it once stopped", async () => {
 			stop = garland();
+			const wire = garlandWire();
 			stop();
 			const create = vi.spyOn(document, "createElementNS");
 			const animate = vi.spyOn(Element.prototype, "animate");
@@ -371,6 +385,7 @@ describe("garland", () => {
 			await wait(100);
 			expect(create).not.toHaveBeenCalled();
 			expect(animate).not.toHaveBeenCalled();
+			expect(wire.getAttribute("d")).toBe(garlandLayout(1200).wire);
 		});
 	});
 });
