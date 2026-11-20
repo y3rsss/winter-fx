@@ -81,6 +81,34 @@ describe("checkColor", () => {
 			),
 		);
 	});
+	test.each(["inherit", "initial", "unset", "revert", "revert-layer"])(
+		"rejects the CSS keyword %s, which the browser counts as a color",
+		(value) => {
+			expect(() => checkColor("frost", "color", value)).toThrow(
+				new RangeError(
+					`winter-fx: frost() setting "color" must be a CSS color, got "${value}"`,
+				),
+			);
+		},
+	);
+	test.each(["INHERIT", " unset "])(
+		"rejects the keyword %j in any case or with spaces around it",
+		(value) => {
+			expect(() => checkColor("frost", "color", value)).toThrow(
+				new RangeError(
+					`winter-fx: frost() setting "color" must be a CSS color, got "${value}"`,
+				),
+			);
+		},
+	);
+	test("allows currentcolor, which is a real color", () => {
+		expect(checkColor("frost", "color", "currentcolor")).toBe("currentcolor");
+	});
+	test("allows a variable whose name has a keyword in it", () => {
+		expect(checkColor("frost", "color", "var(--initial)")).toBe(
+			"var(--initial)",
+		);
+	});
 });
 
 describe("checkColorList", () => {

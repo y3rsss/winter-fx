@@ -1,3 +1,11 @@
+const CSS_WIDE_KEYWORDS = [
+	"inherit",
+	"initial",
+	"unset",
+	"revert",
+	"revert-layer",
+];
+
 function show(value: unknown): string {
 	if (typeof value === "string" || Array.isArray(value)) {
 		return JSON.stringify(value);
@@ -58,6 +66,10 @@ export function checkColor(
 ): string {
 	if (typeof value !== "string") {
 		throw new TypeError(settingMessage(effect, name, "be a string", value));
+	}
+	const cleaned = value.trim().toLowerCase();
+	if (CSS_WIDE_KEYWORDS.includes(cleaned)) {
+		throw new RangeError(settingMessage(effect, name, "be a CSS color", value));
 	}
 	if (!CSS.supports("color", value)) {
 		throw new RangeError(settingMessage(effect, name, "be a CSS color", value));
