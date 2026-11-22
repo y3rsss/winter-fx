@@ -1,31 +1,60 @@
 {
 	"name": "winter-fx",
 	"version": "0.1.0",
-	"description": "",
+	"description": "Falling snow, a twinkling garland and frost on the edges for any web page, with no dependencies",
 	"scripts": {
 		"dev": "vite demo",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check .",
 		"format": "biome check --write .",
-		"test": "vitest run"
+		"test": "vitest run",
+		"build": "tsc -p tsconfig.build.json",
+		"prepack": "npm run build",
+		"size": "npm run build && size-limit",
+		"check:package": "publint && attw --pack . --profile esm-only"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/y3rsss/winter-fx.git"
 	},
-	"keywords": [],
+	"keywords": [
+		"snow",
+		"snowfall",
+		"garland",
+		"frost",
+		"winter",
+		"christmas",
+		"holiday",
+		"effects",
+		"canvas",
+		"svg"
+	],
 	"author": "",
 	"license": "MIT",
 	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"sideEffects": false,
 	"private": true,
 	"bugs": {
 		"url": "https://github.com/y3rsss/winter-fx/issues"
 	},
 	"homepage": "https://github.com/y3rsss/winter-fx#readme",
 	"devDependencies": {
+		"@arethetypeswrong/cli": "0.18.5",
 		"@biomejs/biome": "2.6.3",
+		"@size-limit/preset-small-lib": "14.3.0",
 		"@vitest/browser-playwright": "5.0.5",
 		"playwright": "1.64.1",
+		"publint": "0.3.25",
+		"size-limit": "14.3.0",
 		"typescript": "7.0.2",
 		"vite": "8.3.5",
 		"vitest": "5.0.5"

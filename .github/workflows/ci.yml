@@ -27,3 +27,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Tests
         run: npm test
+      - name: Size
+        run: npm run size
+      - name: Package checks
+        run: npm run check:package

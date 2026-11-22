@@ -1,0 +1,20 @@
+[
+	{
+		"name": "snow",
+		"path": "dist/index.js",
+		"import": "{ snow }",
+		"limit": "2 kB"
+	},
+	{
+		"name": "garland",
+		"path": "dist/index.js",
+		"import": "{ garland }",
+		"limit": "2 kB"
+	},
+	{
+		"name": "frost",
+		"path": "dist/index.js",
+		"import": "{ frost }",
+		"limit": "3 kB"
+	}
+]
