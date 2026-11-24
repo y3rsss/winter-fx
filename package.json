@@ -42,7 +42,6 @@
 		"dist"
 	],
 	"sideEffects": false,
-	"private": true,
 	"bugs": {
 		"url": "https://github.com/y3rsss/winter-fx/issues"
 	},
