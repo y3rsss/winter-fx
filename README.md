@@ -100,6 +100,8 @@ export function Snow() {
 }
 ```
 
+Sites that replace the page's `<body>` without a reload, like Turbo, remove the effects with it. Call the stop function before the swap and start the effect again after it.
+
 ## Script tag
 
 Sites without a build step can load winter-fx from a CDN:
@@ -123,7 +125,9 @@ Visitors can ask their system for less motion. The effects follow that setting, 
 
 ## Browser support
 
-Chrome and Edge 123, Firefox 120 and Safari 17.5, and later versions. These are the first versions with `light-dark()`, which the default colors use.
+Chrome and Edge 123, Firefox 120 and Safari 17.5, and later versions. These are the first with `light-dark()`, which lets the default colors follow dark mode.
+
+Older versions also worked when this release was checked, back to Chromium 112, Firefox 111 and WebKit 16.4, the engine inside Safari. There the default colors stay light on dark pages, so pass your own color if that matters.
 
 ## License
 
