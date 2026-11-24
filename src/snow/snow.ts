@@ -5,6 +5,7 @@ import {
 	checkInteger,
 	checkPositive,
 	readOptions,
+	themeColor,
 } from "../shared/options.ts";
 import { assertBrowser, createOverlay } from "../shared/overlay.ts";
 import type { Stop } from "../shared/stop.ts";
@@ -25,7 +26,8 @@ export interface SnowOptions extends CommonOptions {
 	speed?: number;
 }
 
-const DEFAULT_COLOR = "light-dark(#7f9cc0, #ffffff)";
+const DEFAULT_LIGHT_COLOR = "#7f9cc0";
+const DEFAULT_DARK_COLOR = "#ffffff";
 const MAX_PIXEL_RATIO = 2;
 const FADE_IN_MS = 1000;
 const MAX_AMOUNT = 3;
@@ -84,7 +86,11 @@ export function snow(options?: SnowOptions): Stop {
 		"zIndex",
 	]);
 
-	const color = checkColor("snow", "color", settings.color ?? DEFAULT_COLOR);
+	const color = checkColor(
+		"snow",
+		"color",
+		settings.color ?? themeColor(DEFAULT_LIGHT_COLOR, DEFAULT_DARK_COLOR),
+	);
 	const amount = checkPositive(
 		"snow",
 		"amount",

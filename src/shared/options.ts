@@ -77,6 +77,11 @@ export function checkColor(
 	return value;
 }
 
+export function themeColor(light: string, dark: string): string {
+	const both = `light-dark(${light}, ${dark})`;
+	return CSS.supports("color", both) ? both : light;
+}
+
 export function checkColorList(
 	effect: string,
 	name: string,

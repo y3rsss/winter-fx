@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { commands, page } from "vitest/browser";
 import { switchReducedMotion } from "../../test/reduced-motion.ts";
+import { withoutLightDark } from "../../test/without-light-dark.ts";
 import { snow } from "./snow.ts";
 
 function wait(ms: number): Promise<void> {
@@ -242,6 +243,13 @@ describe("snow", () => {
 		stop = snow();
 		await waitForSnow();
 		expect(drawnColors(snowCanvas())).toEqual(new Set(["255, 255, 255"]));
+	});
+	test("draws blue-grey flakes on any page in a browser without light-dark()", async () => {
+		withoutLightDark();
+		document.documentElement.style.setProperty("color-scheme", "dark");
+		stop = snow();
+		await waitForSnow();
+		expectAverageColor(snowCanvas(), [127, 156, 192]);
 	});
 	test("draws in a color from a CSS variable", async () => {
 		document.documentElement.style.setProperty("--brand", "#ff0000");

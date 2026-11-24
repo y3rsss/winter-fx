@@ -1,10 +1,12 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { withoutLightDark } from "../../test/without-light-dark.ts";
 import {
 	checkColor,
 	checkColorList,
 	checkInteger,
 	checkPositive,
 	readOptions,
+	themeColor,
 } from "./options.ts";
 
 describe("checkInteger", () => {
@@ -108,6 +110,22 @@ describe("checkColor", () => {
 		expect(checkColor("frost", "color", "var(--initial)")).toBe(
 			"var(--initial)",
 		);
+	});
+});
+
+describe("themeColor", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	test("follows the page theme where the browser can", () => {
+		expect(themeColor("#000000", "#ffffff")).toBe(
+			"light-dark(#000000, #ffffff)",
+		);
+	});
+	test("falls back to the light color in a browser without light-dark()", () => {
+		withoutLightDark();
+		expect(themeColor("#000000", "#ffffff")).toBe("#000000");
 	});
 });
 

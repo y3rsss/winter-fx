@@ -5,6 +5,7 @@ import {
 	checkInteger,
 	checkPositive,
 	readOptions,
+	themeColor,
 } from "../shared/options.ts";
 import { assertBrowser, createOverlay } from "../shared/overlay.ts";
 import type { Stop } from "../shared/stop.ts";
@@ -28,7 +29,8 @@ interface Placement {
 	inward: string;
 }
 
-const DEFAULT_COLOR = "light-dark(#6f93bd, #e4efff)";
+const DEFAULT_LIGHT_COLOR = "#6f93bd";
+const DEFAULT_DARK_COLOR = "#e4efff";
 const MAX_SIZE = 2;
 const STROKE_WIDTHS = [0.8, 0.5];
 const OPACITIES = [0.8, 0.6];
@@ -253,7 +255,11 @@ function startGrowth(piece: Piece): Animation[] {
 export function frost(options?: FrostOptions): Stop {
 	assertBrowser("frost");
 	const settings = readOptions("frost", options, ["color", "size", "zIndex"]);
-	const color = checkColor("frost", "color", settings.color ?? DEFAULT_COLOR);
+	const color = checkColor(
+		"frost",
+		"color",
+		settings.color ?? themeColor(DEFAULT_LIGHT_COLOR, DEFAULT_DARK_COLOR),
+	);
 	const size = checkPositive("frost", "size", settings.size ?? 1, MAX_SIZE);
 	const zIndex = checkInteger("frost", "zIndex", settings.zIndex ?? 9999);
 	const layer = createOverlay(zIndex);

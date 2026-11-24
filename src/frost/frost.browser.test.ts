@@ -10,6 +10,7 @@ import {
 } from "vitest";
 import { commands, page } from "vitest/browser";
 import { switchReducedMotion } from "../../test/reduced-motion.ts";
+import { withoutLightDark } from "../../test/without-light-dark.ts";
 import { frostLines, type Line, pathData, type Side } from "./crystals.ts";
 import { frost } from "./frost.ts";
 
@@ -308,6 +309,14 @@ describe("frost", () => {
 		stop = frost();
 		expect(getComputedStyle(piecePaths("bottom").stems).stroke).toBe(
 			"rgb(228, 239, 255)",
+		);
+	});
+	test("draws in ice blue on any page in a browser without light-dark()", () => {
+		withoutLightDark();
+		document.documentElement.style.setProperty("color-scheme", "dark");
+		stop = frost();
+		expect(getComputedStyle(piecePaths("bottom").stems).stroke).toBe(
+			"rgb(111, 147, 189)",
 		);
 	});
 	test("draws every part in the color it was given", () => {
