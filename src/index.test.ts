@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
-test("can be imported outside a browser", async () => {
+// the first import compiles every module, which can pass 5 s while the test browsers start
+test("can be imported outside a browser", { timeout: 20_000 }, async () => {
 	const winterFx = await import("./index.ts");
 	expect(typeof winterFx.snow).toBe("function");
 	expect(typeof winterFx.garland).toBe("function");

@@ -1,4 +1,13 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	test,
+	vi,
+} from "vitest";
 import { commands, page } from "vitest/browser";
 import { switchReducedMotion } from "../../test/reduced-motion.ts";
 import { garland } from "./garland.ts";
@@ -65,10 +74,15 @@ describe("garland", () => {
 	let width = 0;
 	let height = 0;
 
-	beforeEach(async () => {
+	beforeAll(() => {
 		width = innerWidth;
 		height = innerHeight;
+	});
+	beforeEach(async () => {
 		await page.viewport(1200, 800);
+		await vi.waitFor(() => {
+			expect([innerWidth, innerHeight]).toEqual([1200, 800]);
+		});
 	});
 	afterEach(async () => {
 		stop?.();
@@ -76,6 +90,8 @@ describe("garland", () => {
 		vi.restoreAllMocks();
 		document.documentElement.style.removeProperty("--brand");
 		await commands.emulateReducedMotion("no-preference");
+	});
+	afterAll(async () => {
 		await page.viewport(width, height);
 	});
 
@@ -299,7 +315,9 @@ describe("garland", () => {
 		stop = garland();
 		expect(document.getAnimations()).toHaveLength(30);
 		await switchReducedMotion("reduce");
-		expect(document.getAnimations()).toHaveLength(0);
+		await vi.waitFor(() => {
+			expect(document.getAnimations()).toHaveLength(0);
+		});
 		const bulb = bulbBody(0).parentElement;
 		if (bulb === null) {
 			throw new Error("the bulb has no group");

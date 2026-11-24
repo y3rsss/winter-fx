@@ -1,4 +1,13 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	test,
+	vi,
+} from "vitest";
 import { commands, page } from "vitest/browser";
 import { switchReducedMotion } from "../../test/reduced-motion.ts";
 import { frostLines, type Line, pathData, type Side } from "./crystals.ts";
@@ -112,17 +121,24 @@ function growthEffects(): KeyframeEffect[] {
 	});
 }
 
+// headless webkit on windows sometimes stops sending frames to the test page after a resize
+function nextFrame(): Promise<void> {
+	return new Promise((resolve) => {
+		requestAnimationFrame(() => resolve());
+		setTimeout(resolve, 200);
+	});
+}
+
 async function framePainted(): Promise<void> {
-	await new Promise(requestAnimationFrame);
-	await new Promise(requestAnimationFrame);
+	await nextFrame();
+	await nextFrame();
 }
 
 async function resizeTo(width: number, height: number): Promise<void> {
-	const resized = new Promise((resolve) => {
-		addEventListener("resize", resolve, { once: true });
-	});
 	await page.viewport(width, height);
-	await resized;
+	await vi.waitFor(() => {
+		expect([innerWidth, innerHeight]).toEqual([width, height]);
+	});
 	await framePainted();
 }
 
@@ -140,9 +156,11 @@ describe("frost", () => {
 	let width = 0;
 	let height = 0;
 
-	beforeEach(async () => {
+	beforeAll(() => {
 		width = innerWidth;
 		height = innerHeight;
+	});
+	beforeEach(async () => {
 		await page.viewport(1200, 800);
 		await vi.waitFor(() => {
 			expect([innerWidth, innerHeight]).toEqual([1200, 800]);
@@ -157,6 +175,8 @@ describe("frost", () => {
 		document.documentElement.style.removeProperty("--brand");
 		document.documentElement.style.removeProperty("color-scheme");
 		await commands.emulateReducedMotion("no-preference");
+	});
+	afterAll(async () => {
 		await page.viewport(width, height);
 	});
 
@@ -561,9 +581,11 @@ describe("frost", () => {
 		stop = frost();
 		const growths = document.getAnimations();
 		await switchReducedMotion("reduce");
-		expect(growths.map((growth) => growth.playState)).toEqual(
-			Array(8).fill("finished"),
-		);
+		await vi.waitFor(() => {
+			expect(growths.map((growth) => growth.playState)).toEqual(
+				Array(8).fill("finished"),
+			);
+		});
 		expect(document.getAnimations()).toHaveLength(0);
 	});
 	test("cancels the growth when stopped", () => {

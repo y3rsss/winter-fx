@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { cdp, commands, page } from "vitest/browser";
+import { commands, page } from "vitest/browser";
 import { switchReducedMotion } from "../../test/reduced-motion.ts";
 import { snow } from "./snow.ts";
 
@@ -42,8 +42,11 @@ function drawnColors(canvas: HTMLCanvasElement, x = 0, y = 0): Set<string> {
 	return colors;
 }
 
-// faint edge pixels read back a few steps off a color that isn't pure, so this weighs each pixel by its alpha
-function averageColor(canvas: HTMLCanvasElement): string {
+// faint edge pixels read back a few steps off a color that isn't pure, and each engine rounds them its own way
+function expectAverageColor(
+	canvas: HTMLCanvasElement,
+	expected: number[],
+): void {
 	const data = pixelData(canvas);
 	const sums = [0, 0, 0];
 	let weight = 0;
@@ -54,7 +57,10 @@ function averageColor(canvas: HTMLCanvasElement): string {
 		}
 		weight += alpha;
 	}
-	return sums.map((sum) => Math.round(sum / weight)).join(", ");
+	const average = sums.map((sum) => sum / weight);
+	expected.forEach((value, channel) => {
+		expect(Math.abs((average[channel] ?? 0) - value)).toBeLessThanOrEqual(2);
+	});
 }
 
 function opaqueShare(canvas: HTMLCanvasElement): number {
@@ -112,15 +118,6 @@ async function waitForSnow(): Promise<void> {
 	});
 }
 
-async function emulatePixelRatio(ratio: number): Promise<void> {
-	await cdp().send("Emulation.setDeviceMetricsOverride", {
-		width: 0,
-		height: 0,
-		deviceScaleFactor: ratio,
-		mobile: false,
-	});
-}
-
 describe("snow", () => {
 	let stop: (() => void) | undefined;
 
@@ -130,8 +127,8 @@ describe("snow", () => {
 		vi.restoreAllMocks();
 		document.documentElement.style.removeProperty("--brand");
 		document.documentElement.style.removeProperty("color-scheme");
+		vi.unstubAllGlobals();
 		await commands.emulateReducedMotion("no-preference");
-		await cdp().send("Emulation.clearDeviceMetricsOverride");
 	});
 
 	test("adds one layer at the end of the page", () => {
@@ -221,8 +218,8 @@ describe("snow", () => {
 		expect(snowCanvas().width).toBe(Math.round(innerWidth * ratio));
 		expect(snowCanvas().height).toBe(Math.round(innerHeight * ratio));
 	});
-	test("uses at most 2 canvas pixels per CSS pixel", async () => {
-		await emulatePixelRatio(3);
+	test("uses at most 2 canvas pixels per CSS pixel", () => {
+		vi.stubGlobal("devicePixelRatio", 3);
 		stop = snow();
 		expect(snowCanvas().width).toBe(innerWidth * 2);
 		expect(snowCanvas().height).toBe(innerHeight * 2);
@@ -238,7 +235,7 @@ describe("snow", () => {
 	test("draws blue-grey flakes by default on a light page", async () => {
 		stop = snow();
 		await waitForSnow();
-		expect(averageColor(snowCanvas())).toBe("127, 156, 192");
+		expectAverageColor(snowCanvas(), [127, 156, 192]);
 	});
 	test("draws white flakes by default on a dark page", async () => {
 		document.documentElement.style.setProperty("color-scheme", "dark");
@@ -258,7 +255,7 @@ describe("snow", () => {
 		expect(opaqueShare(snowCanvas())).toBeLessThan(0.1);
 	});
 	test("draws across the whole canvas on a high-density screen", async () => {
-		await emulatePixelRatio(2);
+		vi.stubGlobal("devicePixelRatio", 2);
 		stop = snow();
 		const canvas = snowCanvas();
 		await vi.waitFor(() => {
