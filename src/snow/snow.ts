@@ -115,13 +115,19 @@ export function snow(options?: SnowOptions): Stop {
 	let frame: number | undefined;
 
 	function tick(now: number): void {
+		const scheduled = frame;
+		// firefox 111 can run the reduced motion listener inside this read, so the checks come after it
+		const color = getComputedStyle(canvas).color;
+		if (frame !== scheduled || frame === undefined || !canvas.isConnected) {
+			return;
+		}
 		const seconds = elapsedSeconds(last, now);
 		last = now;
 		flakes = flakes.map((flake) =>
 			moveFlake(flake, seconds, speed, bounds, Math.random),
 		);
 
-		drawFlakes(context, flakes, bounds, getComputedStyle(canvas).color);
+		drawFlakes(context, flakes, bounds, color);
 
 		frame = requestAnimationFrame(tick);
 	}
@@ -135,6 +141,7 @@ export function snow(options?: SnowOptions): Stop {
 	function pause(): void {
 		if (frame !== undefined) {
 			cancelAnimationFrame(frame);
+			frame = undefined;
 		}
 		context.clearRect(0, 0, bounds.width, bounds.height);
 	}

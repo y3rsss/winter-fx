@@ -251,6 +251,14 @@ describe("snow", () => {
 		await waitForSnow();
 		expectAverageColor(snowCanvas(), [127, 156, 192]);
 	});
+	test("stops drawing once its layer is taken off the page", async () => {
+		stop = snow();
+		await waitForSnow();
+		const frames = vi.spyOn(window, "requestAnimationFrame");
+		snowLayer().remove();
+		await wait(100);
+		expect(frames).not.toHaveBeenCalled();
+	});
 	test("draws in a color from a CSS variable", async () => {
 		document.documentElement.style.setProperty("--brand", "#ff0000");
 		stop = snow({ color: "var(--brand)" });
@@ -347,6 +355,31 @@ describe("snow", () => {
 		await vi.waitFor(() => {
 			expect(drawnColors(snowCanvas()).size).toBe(0);
 		});
+	});
+	test("stays cleared when reduced motion turns on while a frame reads its color", async () => {
+		// firefox 111 runs media query listeners inside getComputedStyle
+		const query = { matches: false, addEventListener: vi.fn() };
+		vi.spyOn(window, "matchMedia").mockReturnValue(
+			query as unknown as MediaQueryList,
+		);
+		const read = window.getComputedStyle.bind(window);
+		let turnOnDuringRead = false;
+		vi.spyOn(window, "getComputedStyle").mockImplementation((element) => {
+			if (turnOnDuringRead) {
+				turnOnDuringRead = false;
+				query.matches = true;
+				query.addEventListener.mock.calls[0]?.[1]();
+			}
+			return read(element);
+		});
+		stop = snow();
+		await waitForSnow();
+		turnOnDuringRead = true;
+		await wait(100);
+		const frames = vi.spyOn(window, "requestAnimationFrame");
+		await wait(100);
+		expect(frames).not.toHaveBeenCalled();
+		expect(drawnColors(snowCanvas()).size).toBe(0);
 	});
 	test("carries on without a jump when reduced motion is turned off", async () => {
 		sameFlakesEverywhere();
