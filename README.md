@@ -34,7 +34,7 @@ All settings are optional. Every effect also takes `zIndex`, any integer, which 
 Snowflakes falling over the page, in three depth layers.
 
 ```js
-snow({ color: "#ffffff", amount: 2, speed: 0.5 });
+snow({ color: "#ffffff", amount: 2, speed: 0.5, shape: "crystal" });
 ```
 
 | Setting  | Default                          | Valid values                                                           |
@@ -42,6 +42,9 @@ snow({ color: "#ffffff", amount: 2, speed: 0.5 });
 | `color`  | `"light-dark(#7f9cc0, #ffffff)"` | any CSS color                                                          |
 | `amount` | `1`                              | a number greater than 0 and at most 3. Multiplies the number of flakes |
 | `speed`  | `1`                              | a number greater than 0 and at most 5. Multiplies the falling speed    |
+| `shape`  | `"dot"`                          | `"dot"` or `"crystal"`                                                 |
+
+With `shape: "crystal"`, each flake is a thin six-armed crystal or a small clump, as wide as the dot it replaces, that sways and turns as it falls. Crystals take 2 to 3 times as long to draw as dots.
 
 ### garland
 
