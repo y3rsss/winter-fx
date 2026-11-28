@@ -3,7 +3,7 @@
 		"name": "snow",
 		"path": "dist/index.js",
 		"import": "{ snow }",
-		"limit": "2 kB"
+		"limit": "2.5 kB"
 	},
 	{
 		"name": "garland",

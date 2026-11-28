@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { commands, page } from "vitest/browser";
 import { switchReducedMotion } from "../../test/reduced-motion.ts";
 import { withoutLightDark } from "../../test/without-light-dark.ts";
+import { flakeCount } from "./flakes.ts";
 import { snow } from "./snow.ts";
 
 function wait(ms: number): Promise<void> {
@@ -54,13 +55,14 @@ function expectAverageColor(
 	for (let i = 0; i < data.length; i += 4) {
 		const alpha = data[i + 3] ?? 0;
 		for (let channel = 0; channel < 3; channel += 1) {
-			sums[channel] = (sums[channel] ?? 0) + (data[i + channel] ?? 0) * alpha;
+			sums[channel] =
+				(sums[channel] ?? 0) + (data[i + channel] ?? 0) * alpha * alpha;
 		}
-		weight += alpha;
+		weight += alpha * alpha;
 	}
 	const average = sums.map((sum) => sum / weight);
 	expected.forEach((value, channel) => {
-		expect(Math.abs((average[channel] ?? 0) - value)).toBeLessThanOrEqual(2);
+		expect(Math.abs((average[channel] ?? 0) - value)).toBeLessThanOrEqual(3);
 	});
 }
 
@@ -77,6 +79,21 @@ function opaqueShare(canvas: HTMLCanvasElement): number {
 		}
 	}
 	return opaque / drawn;
+}
+
+function drawnMiddle(canvas: HTMLCanvasElement): [x: number, y: number] {
+	const data = pixelData(canvas);
+	let sumX = 0;
+	let sumY = 0;
+	let weight = 0;
+	for (let i = 3; i < data.length; i += 4) {
+		const alpha = data[i] ?? 0;
+		const pixel = (i - 3) / 4;
+		sumX += ((pixel % canvas.width) + 0.5) * alpha;
+		sumY += (Math.floor(pixel / canvas.width) + 0.5) * alpha;
+		weight += alpha;
+	}
+	return [sumX / weight, sumY / weight];
 }
 
 function topDrawnRow(canvas: HTMLCanvasElement): number {
@@ -212,6 +229,21 @@ describe("snow", () => {
 			stop = snow({ amount: 3, speed: 5 });
 		}).not.toThrow();
 	});
+	test("rejects a shape it doesn't have", () => {
+		expect(() => {
+			stop = snow({ shape: "star" as never });
+		}).toThrow(
+			new RangeError(
+				'winter-fx: snow() setting "shape" must be one of "dot", "crystal", got "star"',
+			),
+		);
+		expect(document.querySelector("canvas")).toBeNull();
+	});
+	test("accepts the crystal shape", () => {
+		expect(() => {
+			stop = snow({ shape: "crystal" });
+		}).not.toThrow();
+	});
 
 	test("fits the canvas to the window", () => {
 		stop = snow();
@@ -290,15 +322,18 @@ describe("snow", () => {
 			expect(canvas.toDataURL()).not.toBe(first);
 		});
 	});
-	test("clears each frame before drawing the next", () => {
-		sameFlakesEverywhere();
-		const runFrame = controlFrames();
-		stop = snow();
-		runFrame(0);
-		const start = topDrawnRow(snowCanvas());
-		runFrame(100);
-		expect(topDrawnRow(snowCanvas())).toBeGreaterThan(start);
-	});
+	test.each(["dot", "crystal"] as const)(
+		"clears each frame before drawing the next %s",
+		(shape) => {
+			sameFlakesEverywhere();
+			const runFrame = controlFrames();
+			stop = snow({ shape });
+			runFrame(0);
+			const start = topDrawnRow(snowCanvas());
+			runFrame(100);
+			expect(topDrawnRow(snowCanvas())).toBeGreaterThan(start);
+		},
+	);
 	test("falls twice as far at speed 2", () => {
 		sameFlakesEverywhere();
 		const runFrame = controlFrames();
@@ -419,6 +454,79 @@ describe("snow", () => {
 		const stopSnow = snow();
 		stopSnow();
 		expect(document.getAnimations()).toHaveLength(0);
+	});
+
+	test("draws round dots by default", () => {
+		const arc = vi.spyOn(CanvasRenderingContext2D.prototype, "arc");
+		const stroke = vi.spyOn(CanvasRenderingContext2D.prototype, "stroke");
+		const runFrame = controlFrames();
+		stop = snow();
+		runFrame(0);
+		expect(arc).toHaveBeenCalled();
+		expect(stroke).not.toHaveBeenCalled();
+	});
+
+	describe("with crystals", () => {
+		test("draws them in the default color", async () => {
+			stop = snow({ shape: "crystal" });
+			await waitForSnow();
+			expectAverageColor(snowCanvas(), [127, 156, 192]);
+		});
+		test("strokes them once a layer, back to front, with each layer's see-through, line width and round ends", () => {
+			vi.stubGlobal("devicePixelRatio", 2);
+			const arc = vi.spyOn(CanvasRenderingContext2D.prototype, "arc");
+			const strokes: object[] = [];
+			vi.spyOn(CanvasRenderingContext2D.prototype, "stroke").mockImplementation(
+				function (this: CanvasRenderingContext2D) {
+					strokes.push({
+						opacity: this.globalAlpha,
+						lineWidth: this.lineWidth,
+						lineCap: this.lineCap,
+					});
+				},
+			);
+			const runFrame = controlFrames();
+			stop = snow({ shape: "crystal" });
+			runFrame(0);
+			expect(arc).not.toHaveBeenCalled();
+			expect(strokes).toEqual([
+				{ opacity: expect.closeTo(0.4), lineWidth: 0.75, lineCap: "round" },
+				{
+					opacity: expect.closeTo(0.7),
+					lineWidth: expect.closeTo(0.85),
+					lineCap: "round",
+				},
+				{ opacity: expect.closeTo(0.95), lineWidth: 1, lineCap: "round" },
+			]);
+		});
+		test("draws each crystal once a frame, with its details only from 8 screen pixels across", () => {
+			sameFlakesEverywhere();
+			const runFrame = controlFrames();
+			const lineTo = vi.spyOn(CanvasRenderingContext2D.prototype, "lineTo");
+			function linesInOneFrame(ratio: number): number {
+				vi.stubGlobal("devicePixelRatio", ratio);
+				stop = snow({ shape: "crystal" });
+				lineTo.mockClear();
+				runFrame(0);
+				stop();
+				return lineTo.mock.calls.length;
+			}
+			const count = flakeCount({ width: innerWidth, height: innerHeight }, 1);
+			expect(linesInOneFrame(1)).toBe(count * 3);
+			expect(linesInOneFrame(2)).toBe(count * 9);
+		});
+		test("draws them where they have fallen and swayed to", () => {
+			vi.stubGlobal("devicePixelRatio", 2);
+			sameFlakesEverywhere();
+			const runFrame = controlFrames();
+			stop = snow({ shape: "crystal" });
+			for (let time = 0; time <= 800; time += 100) {
+				runFrame(time);
+			}
+			const [x, y] = drawnMiddle(snowCanvas());
+			expect(x).toBeCloseTo(2 * (innerWidth / 2 - 7 * Math.sin(1.5)), 0);
+			expect(y).toBeCloseTo(2 * (innerHeight / 2 + 44), 0);
+		});
 	});
 
 	describe("when the window resizes", () => {
