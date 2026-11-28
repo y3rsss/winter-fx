@@ -25,15 +25,28 @@ const snowButton = byId("snow");
 const garlandButton = byId("garland");
 const frostButton = byId("frost");
 const darkButton = byId("dark");
+const crystalsButton = byId("crystals");
 const sampleButton = byId("sample");
 const clicks = byId("clicks");
 
-const toggleSnow = effectToggle(snowButton, () => snow());
+const toggleSnow = effectToggle(snowButton, () =>
+	snow({ shape: crystals ? "crystal" : "dot" }),
+);
 const toggleGarland = effectToggle(garlandButton, () => garland());
 const toggleFrost = effectToggle(frostButton, () => frost());
 
 let dark = false;
+let crystals = false;
 let clickCount = 0;
+
+function toggleCrystals(): void {
+	crystals = !crystals;
+	crystalsButton.setAttribute("aria-pressed", String(crystals));
+	if (snowButton.getAttribute("aria-pressed") === "true") {
+		toggleSnow();
+		toggleSnow();
+	}
+}
 
 function toggleDark(): void {
 	dark = !dark;
@@ -45,6 +58,7 @@ snowButton.addEventListener("click", toggleSnow);
 garlandButton.addEventListener("click", toggleGarland);
 frostButton.addEventListener("click", toggleFrost);
 darkButton.addEventListener("click", toggleDark);
+crystalsButton.addEventListener("click", toggleCrystals);
 sampleButton.addEventListener("click", () => {
 	clickCount += 1;
 	clicks.textContent = `Clicks: ${clickCount}`;
