@@ -100,6 +100,23 @@ export function checkColorList(
 	);
 }
 
+export function checkChoice<Choice extends string>(
+	effect: string,
+	name: string,
+	value: unknown,
+	choices: readonly Choice[],
+): Choice {
+	const rule = `be one of ${choices.map(show).join(", ")}`;
+	if (typeof value !== "string") {
+		throw new TypeError(settingMessage(effect, name, rule, value));
+	}
+	const choice = choices.find((item) => item === value);
+	if (choice === undefined) {
+		throw new RangeError(settingMessage(effect, name, rule, value));
+	}
+	return choice;
+}
+
 export interface CommonOptions {
 	zIndex?: number;
 }

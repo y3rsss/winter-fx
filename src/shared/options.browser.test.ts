@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { withoutLightDark } from "../../test/without-light-dark.ts";
 import {
+	checkChoice,
 	checkColor,
 	checkColorList,
 	checkInteger,
@@ -170,6 +171,38 @@ describe("checkColorList", () => {
 		expect(() => checkColorList("garland", "colors", withGap)).toThrow(
 			new TypeError(
 				'winter-fx: garland() setting "colors[1]" must be a string, got undefined',
+			),
+		);
+	});
+});
+
+describe("checkChoice", () => {
+	const shapes = ["dot", "crystal"] as const;
+
+	test("gives back a value that is one of the choices", () => {
+		expect(checkChoice("snow", "shape", "crystal", shapes)).toBe("crystal");
+	});
+	test("works with any list of choices", () => {
+		expect(checkChoice("garland", "size", "big", ["small", "big"])).toBe("big");
+	});
+	test("rejects a word that isn't a choice and lists the choices", () => {
+		expect(() => checkChoice("snow", "shape", "star", shapes)).toThrow(
+			new RangeError(
+				'winter-fx: snow() setting "shape" must be one of "dot", "crystal", got "star"',
+			),
+		);
+	});
+	test("rejects a choice written in other letter case", () => {
+		expect(() => checkChoice("snow", "shape", "Crystal", shapes)).toThrow(
+			new RangeError(
+				'winter-fx: snow() setting "shape" must be one of "dot", "crystal", got "Crystal"',
+			),
+		);
+	});
+	test("rejects a value that isn't text", () => {
+		expect(() => checkChoice("snow", "shape", 1, shapes)).toThrow(
+			new TypeError(
+				'winter-fx: snow() setting "shape" must be one of "dot", "crystal", got 1',
 			),
 		);
 	});
